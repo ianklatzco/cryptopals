@@ -1,19 +1,18 @@
 # convert hex to base64
 
-# TODO setup mypy
-
 # https://cryptopals.com/sets/1/challenges/1
-# from docs: 
 # Always operate on raw bytes, never on encoded strings. Only use hex and base64 for pretty-printing.
 
 # what does this mean?
-
-# guessing b'' instead of a regular s=''
+# b'foo' instead of a regular s='foo'
+#   we want to use the bytes or bytearray type in python, not the string type.
+# indexing a str: returns char
+# indexing a b'': returns int
 
 # bytes() are immutable (b'')
 # bytearray() are not.
 
-# why does bytes require an encoding? oh i guess that's kind the definition of an encoding? 
+# why does bytes require an encoding?
 # no, each of these should correspond to a particular byte in the file.....
 # i guess, if it's unicode, hm..... how would you interpret the four bytes or so?
 # you'd need to specify the encoding.
@@ -21,23 +20,10 @@ ascii_rep = bytes('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz012345678
 # each of these chars maps to a 6 bit value, starting at 000000 and up till 111111, incrementing as standard binary does.
 # chunk 6 bits and do a table lookup.
 
-# build the table
-# list of tuples
-
-t = ascii_rep
-
-# bin_rep = 0b000000 # it's still an int technically, the 0b is for show i guess
-
-# for c in ascii_rep:
-# 	t.append( (c,bin_rep) )
-# 	bin_rep = bin_rep + 1
-
-# this data structure may not have made the most sense. 
-# we need to lookup by 6-bit value.
-
 # flatten = lambda l: [item for sublist in l for item in sublist]
 
 def flatten(l):
+	'''flattens doubly-nested lists.'''
 	build = []
 	for sublist in l:
 		for item in sublist:
@@ -46,6 +32,7 @@ def flatten(l):
 
 # TODO type annotations
 def hex_to_b64(hex_as_raw_bytes):
+	# padding
 	if len(hex_as_raw_bytes) % 3 == 2:
 		hex_as_raw_bytes.append(0x3D) # =
 	elif len(hex_as_raw_bytes) % 3 == 1:
@@ -89,7 +76,7 @@ def hex_to_b64(hex_as_raw_bytes):
 	for four_group in int_list:
 		char_list = []
 		for c in four_group:
-			char_list.append(t[c]) 
+			char_list.append(ascii_rep[c]) 
 		final_out.append(char_list)
 	# print(final_out)
 
