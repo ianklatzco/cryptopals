@@ -92,5 +92,11 @@ def hex_to_b64(hex_as_raw_bytes):
 	# add lookup result to building string
 
 
-r = hex_to_b64(bytearray('foobarbaz','ascii'))
-# print('result: ', r)
+# part two
+def xor_two_buffers(b1, b2):
+	build = bytearray()
+	# b1 and b2 are equal length bytearray objects
+	for a,b in zip(b1,b2):
+		build.append(a ^ b)
+
+	return build
