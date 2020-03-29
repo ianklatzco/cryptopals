@@ -19,3 +19,17 @@ def test_xor_two_buffers():
 	res = bytes.fromhex('746865206b696420646f6e277420706c6179')
 
 	assert xor_two_buffers(b1,b2) == res
+
+def test_find_single_byte_xor_key():
+	ciphertext = bytes.fromhex('1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736')
+	find_single_byte_xor_key(ciphertext)
+	pass
+
+def test_decrypt_xor_d_message():
+	ciphertext = bytes.fromhex('1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736')
+	plaintext = b"Cooking MC\'s like a pound of bacon"
+
+	key = find_single_byte_xor_key(ciphertext)
+
+	r = decrypt_xor_d_message(ciphertext,88) # hardcoded lol
+

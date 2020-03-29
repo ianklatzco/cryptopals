@@ -1,4 +1,4 @@
-# convert hex to base64
+########## 1-1: convert hex to base64 ##########
 
 # https://cryptopals.com/sets/1/challenges/1
 # Always operate on raw bytes, never on encoded strings. Only use hex and base64 for pretty-printing.
@@ -91,8 +91,8 @@ def hex_to_b64(hex_as_raw_bytes):
 	# lookup: t[6bit]
 	# add lookup result to building string
 
+########## 1-2: xor two buffers ##########
 
-# part two
 def xor_two_buffers(b1, b2):
 	build = bytearray()
 	# b1 and b2 are equal length bytearray objects
@@ -100,3 +100,40 @@ def xor_two_buffers(b1, b2):
 		build.append(a ^ b)
 
 	return build
+
+########## 1-3: find a single-byte key ##########
+
+# find the key, decrypt the message. what should our function return?
+# probably guesses for the key, or the message.
+
+from collections import Counter
+
+def find_single_byte_xor_key(ciphertext):
+	# look for highest-occurring character
+	# assume it's e
+	# e ^ highest freq = key
+
+	e = Counter(ciphertext).most_common()
+
+	# print(e)
+	print(list(map(lambda x: (hex(x[0]), x[1]),e)))
+
+	key = e[0][0] ^ ord('e')
+
+	# i'm kinda hairy, this doesn't work for our partic plaintext.
+	# i don't really wanna design a more complex heuristic rn tho.
+
+	# space is the highest-occuring char
+
+	return key
+
+def decrypt_xor_d_message(ciphertext,key):
+	build = bytearray()
+	for c in ciphertext:
+		build.append(c ^ key)
+	return build
+
+
+
+
+
