@@ -1,6 +1,9 @@
 from itertools import cycle
 from collections import Counter
 from functools import reduce
+import base64
+import operator
+import string
 
 ########## 1-1: convert hex to base64 ##########
 
@@ -111,7 +114,7 @@ def xor_two_buffers(b1, b2):
 # find the key, decrypt the message. what should our function return?
 # probably guesses for the key, or the message.
 
-def find_single_byte_xor_key(ciphertext):
+def find_single_byte_xor_key_first_attempt(ciphertext):
 	# look for highest-occurring character
 	# assume it's e
 	# e ^ highest freq = key
@@ -128,7 +131,60 @@ def find_single_byte_xor_key(ciphertext):
 
 	# space is the highest-occuring char
 
+	# so anyway, that approach is flawed. let's just find "percent of chars that are ascii-printable"
+
 	return key
+
+def find_single_byte_xor_key(ciphertext):
+	list_of_all_keys = []
+	for i in range(0,256):
+		# xor i with everything in ciphertext
+		xor = lambda x: x ^ i
+		newlist = list(map(xor, ciphertext))
+
+		list_of_all_keys.append(newlist)
+
+	# list index corresponds to the xor key
+
+	score_list = list(map(score, list_of_all_keys))
+	print(score_list)
+
+	# find index of score_list's highest
+	# warning that there could be multiple
+	# maybe sort the list so the higher are @ the top?
+
+	highest_score: Tuple = max(enumerate(score_list), key=lambda x: x[1])
+	# so the highest score is the list at this index, which means the index is our key.
+
+	key = highest_score[0]
+	return key
+
+def score(text):
+	'''
+	give back: percentage of bytes that are printable
+	this approach didn't work because a lot of the results are fully ascii-printable.
+	'''
+
+
+	'''
+	score = 0
+
+	for c in text:
+		if chr(c) in string.printable:
+			score += 1
+
+	return score / len(text)
+	'''
+
+	# ok pause on that. what if i return the one with the most spaces?
+
+	score = 0
+	for c in text:
+		if chr(c) == ' ':
+			score += 1
+
+	return score / len(text)
+
 
 def decrypt_xor_d_message(ciphertext,key):
 	build = bytearray()
@@ -147,12 +203,6 @@ def repeating_key_xor(plaintext: bytes, key: bytes):
 	return ciphertext
 
 ### 1-6: breaking repeating key xor ###
-
-with open('6.txt') as f:
-	pass
-
-
-KEYSIZE = 2 # up to 40. this is the length we are guessing for the key.
 
 def compute_edit_distance(b1, b2):
 	'''
@@ -190,6 +240,27 @@ def compute_edit_distance(b1, b2):
 
 	return build
 
+def open_file():
+	with open('6.txt') as f:
+		c = f.readlines()
+		b64 = ''.join(list(map(str.strip, c)))
+		return base64.b64decode(b64)
+
+def transpose(buf: bytes, keysize):
+	b = []
+	num_blocks = len(buf) // keysize
+
+	for x in range(keysize):
+		curr_b = []
+		for block_index in range(num_blocks):
+			e = buf[block_index * keysize + x]
+			curr_b.append(chr(e))
+		b.append(curr_b)
+	return b
+
+
+def break_repeating_xor():
+
 # For each KEYSIZE, take the first KEYSIZE worth of bytes, 
 # and the second KEYSIZE worth of bytes, and find the edit 
 # distance between them. Normalize this result by dividing by KEYSIZE.
@@ -202,10 +273,32 @@ def compute_edit_distance(b1, b2):
 # the key. You could proceed perhaps with the smallest 2-3 KEYSIZE
 # values. Or take 4 KEYSIZE blocks instead of 2 and average the distances.
 
+	raw_bytes = open_file()
+
+	list_of_normalized_edit_distances = [] # [(keysize, dist)]
+	for keysize in range(2,41):
+		first_block = raw_bytes[0:keysize]
+		second_block = raw_bytes[keysize:2*keysize]
+		h = compute_edit_distance(first_block, second_block)
+		normalized_edit_distance = h / keysize
+
+		list_of_normalized_edit_distances.append((keysize, normalized_edit_distance))
+
+	probable_keysize = min(list_of_normalized_edit_distances, key=lambda t: t[1])
+	list_of_normalized_edit_distances.pop()
+
+	second_prob_keysize = min(list_of_normalized_edit_distances, key=lambda t: t[1])
+	list_of_normalized_edit_distances.pop()
+
+	third_probable_keysize = min(list_of_normalized_edit_distances, key=lambda t: t[1])
+
 # Now that you probably know the KEYSIZE: break the ciphertext into blocks of KEYSIZE length.
 # Now transpose the blocks: make a block that is the first byte of every block, and a block that is the second byte of every block, and so on.
 # Solve each block as if it was single-character XOR. You already have code to do this.
 # For each block, the single-byte XOR key that produces the best looking histogram is the repeating-key XOR key byte for that block. Put them together and you have the key.
+
+	# tranpose blocks
+	transpose(raw_bytes)
 
 
 # broadly, there's two steps: find the KEYSIZE, then find the .... alignment, most likely, since it's probably a repeating key.

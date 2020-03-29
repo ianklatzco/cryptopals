@@ -12,10 +12,17 @@ def test_hex_to_b64_two():
 	mine = hex_to_b64(bytearray('foobarbaz','ascii'))
 	assert canonical == mine
 
+def test_score():
+	# assert score(b'abc\x00') == .75
+	pass
+
+def test_transpose():
+	assert transpose(b'abcdef',3) == [['a', 'd'], ['b', 'e'], ['c', 'f']]
+	assert transpose(b'abcdef',2) == [['a', 'c', 'e'], ['b', 'd', 'f']]
+
 def test_find_single_byte_xor_key():
 	ciphertext = bytes.fromhex('1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736')
-	find_single_byte_xor_key(ciphertext)
-	pass
+	assert 88 == find_single_byte_xor_key(ciphertext)
 
 def test_decrypt_xor_d_message():
 	ciphertext = bytes.fromhex('1b37373331363f78151b7f2b783431333d78397828372d363c78373e783a393b3736')
@@ -23,7 +30,7 @@ def test_decrypt_xor_d_message():
 
 	key = find_single_byte_xor_key(ciphertext)
 
-	r = decrypt_xor_d_message(ciphertext,88) # hardcoded lol
+	assert plaintext == decrypt_xor_d_message(ciphertext,key)
 
 def test_xor_two_buffers():
 	b1 = bytes.fromhex('1c0111001f010100061a024b53535009181c')
