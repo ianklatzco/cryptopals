@@ -1,4 +1,4 @@
-from break_repeating_xor import *
+from set_one import *
 import base64
 
 def test_hex_to_b64_one(): 

@@ -1,5 +1,6 @@
 from itertools import cycle
 from collections import Counter
+from functools import reduce
 
 ########## 1-1: convert hex to base64 ##########
 
@@ -162,12 +163,32 @@ def compute_edit_distance(b1, b2):
 	# count the number of bits that are different.
 	# xor them and then count the ones.
 
+	# map
+	# xored = xor_two_buffers(b1, b2)
+	# count_ones = lambda byte: bin(byte)[2:].count('1')
+	# num_ones = sum(map(count_ones, xored))
+	# return num_ones
+
+	# filter (reduce)
+	# xored = xor_two_buffers(b1, b2)
+	# count_ones = lambda acc, byte: bin(byte)[2:].count('1') + acc
+	# num_ones = reduce(count_ones, xored, 0)
+	# return num_ones
+
+	# for loop (string counting)
+	# build = 0
+	# for a, b in zip(b1,b2):
+	# 	build += bin(a ^ b)[2:].count('1')
+	# return build
+
+	# for loop with bitshifts
 	build = 0
-	for a, b in zip(b1,b2):
-		build += bin(a ^ b)[2:].count('1')
+	for byte in xor_two_buffers(b1,b2):
+		for i in range(8):
+			build += byte & 0x01
+			byte >>= 1
 
 	return build
-
 
 # For each KEYSIZE, take the first KEYSIZE worth of bytes, 
 # and the second KEYSIZE worth of bytes, and find the edit 
