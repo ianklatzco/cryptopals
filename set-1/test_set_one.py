@@ -69,10 +69,5 @@ def test_compute_edit_distance():
 
 def test_break_repeating_xor():
 	r = break_repeating_xor()
-	assert False
+	assert b"I'm back and" in r
 
-def test_key_for_repeated_xor():
-	ciphertext = open_file()
-
-	# plaintext = repeating_key_xor(ciphertext, key)
-	# assert False

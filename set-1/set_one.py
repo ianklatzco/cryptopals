@@ -264,23 +264,32 @@ def break_repeating_xor():
 # the key. You could proceed perhaps with the smallest 2-3 KEYSIZE
 # values. Or take 4 KEYSIZE blocks instead of 2 and average the distances.
 
+	# This code computes the hamming distance between every two adjacent blocks
+	# in the ciphertext. Doing only the first two was not fruitful -- it returned
+	# incorrect block lengths.
+
+	# The problem prompt doesn't really suggest this; I learned it from blog posts.
+
 	raw_bytes = open_file()
-	print(raw_bytes)
 
 	list_of_normalized_edit_distances = [] # [(keysize, dist)]
 	for keysize in range(2,41):
-		first_block = raw_bytes[0:keysize]
-		second_block = raw_bytes[keysize:2*keysize]
-		h = compute_edit_distance(first_block, second_block)
-		normalized_edit_distance = h / keysize
-
-		list_of_normalized_edit_distances.append((keysize, normalized_edit_distance))
+		total_num_blocks = len(raw_bytes) // keysize
+		build = []
+		for block_index in range(total_num_blocks):
+			if block_index % 2 != 0: continue
+			b1 = raw_bytes[ block_index*keysize : keysize*(block_index + 1) ]
+			b2 = raw_bytes[ (block_index+1)*keysize : keysize*(block_index + 2) ]
+			build.append(compute_edit_distance(b1,b2))
+		normalized_dist = sum(build) / len(build) / keysize
+		list_of_normalized_edit_distances.append((keysize,normalized_dist))
 
 	# print(list_of_normalized_edit_distances)
-	# s = sorted(list_of_normalized_edit_distances, key=lambda x:x[1])
-	# print(s)
+	s = sorted(list_of_normalized_edit_distances, key=lambda x:x[1])
+	print(s)
 
 	probable_keysize = min(list_of_normalized_edit_distances, key=lambda t: t[1])[0]
+	# probable_keysize = 29
 	# list_of_normalized_edit_distances.remove((5,1.2))
 
 	# second_prob_keysize = min(list_of_normalized_edit_distances, key=lambda t: t[1])[0]
@@ -307,7 +316,7 @@ def break_repeating_xor():
 
 	# print(t)
 
-	print("KEY: ",key)
+	# print("KEY: ",key)
 
 	plaintext = repeating_key_xor(raw_bytes, key)
 
