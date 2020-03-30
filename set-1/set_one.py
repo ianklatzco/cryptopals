@@ -180,7 +180,7 @@ def score(text):
 	score = 0
 
 	for byte in text:
-		a = scores.get(chr(byte),0) # default 0
+		a = scores.get(chr(byte).lower(),0) # default 0
 		score += a
 
 	return score
@@ -190,6 +190,25 @@ def single_byte_xor(ciphertext,key):
 	for c in ciphertext:
 		build.append(c ^ key)
 	return build
+
+########## 1-4: detect single-char XOR ##########
+# needle, haystack
+def open_four():
+	with open('4.txt') as f:
+		li = f.readlines()
+		li = list(map(str.strip, li))
+		li = list(map(bytes.fromhex,li))
+
+		build = []
+		for i in li:
+			key = find_single_byte_xor_key(i)
+			build.append(single_byte_xor(i,key))
+
+		index_of_english = max(enumerate(list(map(score,build))), key=lambda x: x[1])
+		# 170 iirc?
+		assert index_of_english == 170
+
+		return build[index_of_english]
 
 ### 1-5: repeating-key xor ###
 
@@ -246,6 +265,7 @@ def break_repeating_xor():
 # values. Or take 4 KEYSIZE blocks instead of 2 and average the distances.
 
 	raw_bytes = open_file()
+	print(raw_bytes)
 
 	list_of_normalized_edit_distances = [] # [(keysize, dist)]
 	for keysize in range(2,41):
@@ -257,14 +277,16 @@ def break_repeating_xor():
 		list_of_normalized_edit_distances.append((keysize, normalized_edit_distance))
 
 	# print(list_of_normalized_edit_distances)
+	# s = sorted(list_of_normalized_edit_distances, key=lambda x:x[1])
+	# print(s)
 
 	probable_keysize = min(list_of_normalized_edit_distances, key=lambda t: t[1])[0]
-	list_of_normalized_edit_distances.remove((5,1.2))
+	# list_of_normalized_edit_distances.remove((5,1.2))
 
-	second_prob_keysize = min(list_of_normalized_edit_distances, key=lambda t: t[1])[0]
-	list_of_normalized_edit_distances.remove((3,2.0))
+	# second_prob_keysize = min(list_of_normalized_edit_distances, key=lambda t: t[1])[0]
+	# list_of_normalized_edit_distances.remove((3,2.0))
 
-	third_probable_keysize = min(list_of_normalized_edit_distances, key=lambda t: t[1])[0]
+	# third_probable_keysize = min(list_of_normalized_edit_distances, key=lambda t: t[1])[0]
 
 # Now that you probably know the KEYSIZE: break the ciphertext into blocks of KEYSIZE length.
 # Now transpose the blocks: make a block that is the first byte of every block, and a block that is the second byte of every block, and so on.
@@ -283,9 +305,14 @@ def break_repeating_xor():
 	# print(t)
 	key = list(map(find_single_byte_xor_key, t))
 
+	# print(t)
+
 	print("KEY: ",key)
 
-	return repeating_key_xor(raw_bytes, key)
+	plaintext = repeating_key_xor(raw_bytes, key)
+
+	# assert False
+	return plaintext
 
 
 
