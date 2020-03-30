@@ -162,8 +162,13 @@ def find_single_byte_xor_key(ciphertext):
 
 def score(text):
 
+	# i wrote like four of these and no one of them worked consistently. see git history
+
 	# for each character, grab its occurrence in the english alphabet from here
 	# and add that to a total.
+
+	# via wikipedia/Letter_frequency +
+	# https://laconicwolf.com/2018/05/29/cryptopals-challenge-3-single-byte-xor-cipher-in-python/
 
 	# the highest total represents the result most likely to be english text.
 	scores = {'a':.08167, 'b':.01492, 'c':.02202, 'd':.04253, 'e':.12702, 'f':.02228, 
@@ -179,9 +184,6 @@ def score(text):
 		score += a
 
 	return score
-
-
-
 
 def single_byte_xor(ciphertext,key):
 	build = bytearray()
