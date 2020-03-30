@@ -68,6 +68,13 @@ def test_compute_edit_distance():
 	assert 37 == compute_edit_distance(b'this is a test', b'wokka wokka!!!')
 
 def test_break_repeating_xor():
-	key = [92, 10, 75, 8, 75]
 	# assert break_repeating_xor() == False
 	pass
+
+def test_key_for_repeated_xor():
+	ciphertext = open_file()
+
+	key = [110, 32, 110, 32, 110]
+
+	print(repeating_key_xor(ciphertext, key))
+	# assert False

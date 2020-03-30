@@ -154,7 +154,7 @@ def find_single_byte_xor_key(ciphertext):
 	# maybe sort the list so the higher are @ the top?
 
 	highest_score: Tuple = max(enumerate(score_list), key=lambda x: x[1])
-	print(highest_score)
+	# print(highest_score)
 	# so the highest score is the list at this index, which means the index is our key.
 
 	key = highest_score[0]
@@ -204,32 +204,6 @@ def repeating_key_xor(plaintext: bytes, key: bytes):
 ### 1-6: breaking repeating key xor ###
 
 def compute_edit_distance(b1, b2):
-	'''
-	just the difference between the bits.
-	'''
-
-	# for each byte in the strings,
-	# count the number of bits that are different.
-	# xor them and then count the ones.
-
-	# map
-	# xored = xor_two_buffers(b1, b2)
-	# count_ones = lambda byte: bin(byte)[2:].count('1')
-	# num_ones = sum(map(count_ones, xored))
-	# return num_ones
-
-	# filter (reduce)
-	# xored = xor_two_buffers(b1, b2)
-	# count_ones = lambda acc, byte: bin(byte)[2:].count('1') + acc
-	# num_ones = reduce(count_ones, xored, 0)
-	# return num_ones
-
-	# for loop (string counting)
-	# build = 0
-	# for a, b in zip(b1,b2):
-	# 	build += bin(a ^ b)[2:].count('1')
-	# return build
-
 	# for loop with bitshifts
 	build = 0
 	for byte in xor_two_buffers(b1,b2):
@@ -308,6 +282,8 @@ def break_repeating_xor():
 
 	# print(t)
 	key = list(map(find_single_byte_xor_key, t))
+
+	print("KEY: ",key)
 
 	return repeating_key_xor(raw_bytes, key)
 
