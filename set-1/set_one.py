@@ -147,71 +147,36 @@ def find_single_byte_xor_key(ciphertext):
 	# list index corresponds to the xor key
 
 	score_list = list(map(score, list_of_all_keys))
-	print(list(enumerate(score_list)))
+	# print(list(enumerate(score_list)))
 
 	# find index of score_list's highest
 	# warning that there could be multiple
 	# maybe sort the list so the higher are @ the top?
 
-	highest_score: Tuple = min(enumerate(score_list), key=lambda x: x[1])
+	highest_score: Tuple = max(enumerate(score_list), key=lambda x: x[1])
+	print(highest_score)
 	# so the highest score is the list at this index, which means the index is our key.
 
 	key = highest_score[0]
 	return key
 
 def score(text):
-	'''
-	# give back: percentage of bytes that are printable
-	# this approach didn't work because a lot of the results are fully ascii-printable.
-	score = 0
 
-	for c in text:
-		if chr(c) in string.printable:
-			score += 1
+	# for each character, grab its occurrence in the english alphabet from here
+	# and add that to a total.
 
-	return score / len(text)
-	'''
-
-	# ok pause on that. what if i return the one with the most spaces?
-	'''
-	score = 0
-	for c in text:
-		if chr(c) == ' ':
-			score += 1
-
-	return score / len(text)
-	'''
-
-	'''
-	# ok try again. print the ten most common characters and take the one that 
-	# best matches ETAOIN SHRDLU
-	# so score should be the percentage of chars in ETAOIN SHRDLU
-
-	# used the hamming distance between the 13 most common chars and what the text snippet produced.
-	# probably not a.... great solution but it works sometime?
-	ten_most_common = Counter(text).most_common(13)
-	ten_most_common = [ chr(x[0]) for x in ten_most_common ]
-	def foo(x):
-		if x.isascii():
-			return x.upper()
-		else:
-			return x
-	ten_most_common = [ foo(x) for x in ten_most_common ]
-	ten_most_common = [ ord(x) for x in ten_most_common ]
-
-	# list of ten most common characters in the cyphertext
-	score = compute_edit_distance(ten_most_common, list(map(ord,' ETAOINSHRDLU')))
-
-	return score
-	'''
-
+	# the highest total represents the result most likely to be english text.
 	scores = {'a':.08167, 'b':.01492, 'c':.02202, 'd':.04253, 'e':.12702, 'f':.02228, 
 	 'g':.02015, 'h':.06094, 'i':.06966, 'j':.00153, 'k':.01292, 'l':.04025,
 	 'm':.02406, 'n':.06749, 'o':.07507, 'p':.01929, 'q':.00095, 'r':.05987,
 	 's':.06327, 't':.09356, 'u':.02758, 'v':.00978, 'w':.02560, 'x':.00150,
-	 'y':.01994, 'z':.00077}
+	 'y':.01994, 'z':.00077, ' ':.13}
 
 	score = 0
+
+	for byte in text:
+		a = scores.get(chr(byte),0) # default 0
+		score += a
 
 	return score
 
