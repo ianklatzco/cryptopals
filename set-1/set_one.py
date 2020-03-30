@@ -4,6 +4,7 @@ from functools import reduce
 import base64
 import operator
 import string
+from Crypto.Cipher import AES
 
 ########## 1-1: convert hex to base64 ##########
 
@@ -316,7 +317,8 @@ def break_repeating_xor():
 
 	# print(t)
 
-	# print("KEY: ",key)
+	print("KEY: ", ''.join(map(chr,key)))
+	assert ''.join(map(chr,key)) == 'Terminator X: Bring the noise','ascii'
 
 	plaintext = repeating_key_xor(raw_bytes, key)
 
@@ -334,3 +336,13 @@ def break_repeating_xor():
 
 # oh! but it occurs to me that we don't know the key at all. getting the keysize alone is only part of the problem. we then need to recover the
 # actual key, which is easiest to do with a single-key xor.
+
+def chal7():
+	f = open('7.txt','rb')
+	c = base64.b64decode(f.read())
+
+	key = b'YELLOW SUBMARINE'
+
+	cipher = AES.new(key, AES.MODE_ECB)
+	plaintext = cipher.decrypt(c)
+	return plaintext

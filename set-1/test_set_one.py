@@ -71,3 +71,6 @@ def test_break_repeating_xor():
 	r = break_repeating_xor()
 	assert b"I'm back and" in r
 
+def test_chal_7():
+	r = chal7()
+	assert b"I'm back and I'm ringin" in r
