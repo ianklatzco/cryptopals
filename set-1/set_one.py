@@ -122,7 +122,7 @@ def find_single_byte_xor_key_first_attempt(ciphertext):
 	e = Counter(ciphertext).most_common()
 
 	# print(e)
-	print(list(map(lambda x: (hex(x[0]), x[1]),e)))
+	# print(list(map(lambda x: (hex(x[0]), x[1]),e)))
 
 	key = e[0][0] ^ ord('e')
 
@@ -147,13 +147,13 @@ def find_single_byte_xor_key(ciphertext):
 	# list index corresponds to the xor key
 
 	score_list = list(map(score, list_of_all_keys))
-	print(score_list)
+	print(list(enumerate(score_list)))
 
 	# find index of score_list's highest
 	# warning that there could be multiple
 	# maybe sort the list so the higher are @ the top?
 
-	highest_score: Tuple = max(enumerate(score_list), key=lambda x: x[1])
+	highest_score: Tuple = min(enumerate(score_list), key=lambda x: x[1])
 	# so the highest score is the list at this index, which means the index is our key.
 
 	key = highest_score[0]
@@ -161,12 +161,8 @@ def find_single_byte_xor_key(ciphertext):
 
 def score(text):
 	'''
-	give back: percentage of bytes that are printable
-	this approach didn't work because a lot of the results are fully ascii-printable.
-	'''
-
-
-	'''
+	# give back: percentage of bytes that are printable
+	# this approach didn't work because a lot of the results are fully ascii-printable.
 	score = 0
 
 	for c in text:
@@ -177,16 +173,52 @@ def score(text):
 	'''
 
 	# ok pause on that. what if i return the one with the most spaces?
-
+	'''
 	score = 0
 	for c in text:
 		if chr(c) == ' ':
 			score += 1
 
 	return score / len(text)
+	'''
+
+	'''
+	# ok try again. print the ten most common characters and take the one that 
+	# best matches ETAOIN SHRDLU
+	# so score should be the percentage of chars in ETAOIN SHRDLU
+
+	# used the hamming distance between the 13 most common chars and what the text snippet produced.
+	# probably not a.... great solution but it works sometime?
+	ten_most_common = Counter(text).most_common(13)
+	ten_most_common = [ chr(x[0]) for x in ten_most_common ]
+	def foo(x):
+		if x.isascii():
+			return x.upper()
+		else:
+			return x
+	ten_most_common = [ foo(x) for x in ten_most_common ]
+	ten_most_common = [ ord(x) for x in ten_most_common ]
+
+	# list of ten most common characters in the cyphertext
+	score = compute_edit_distance(ten_most_common, list(map(ord,' ETAOINSHRDLU')))
+
+	return score
+	'''
+
+	scores = {'a':.08167, 'b':.01492, 'c':.02202, 'd':.04253, 'e':.12702, 'f':.02228, 
+	 'g':.02015, 'h':.06094, 'i':.06966, 'j':.00153, 'k':.01292, 'l':.04025,
+	 'm':.02406, 'n':.06749, 'o':.07507, 'p':.01929, 'q':.00095, 'r':.05987,
+	 's':.06327, 't':.09356, 'u':.02758, 'v':.00978, 'w':.02560, 'x':.00150,
+	 'y':.01994, 'z':.00077}
+
+	score = 0
+
+	return score
 
 
-def decrypt_xor_d_message(ciphertext,key):
+
+
+def single_byte_xor(ciphertext,key):
 	build = bytearray()
 	for c in ciphertext:
 		build.append(c ^ key)
@@ -254,10 +286,9 @@ def transpose(buf: bytes, keysize):
 		curr_b = []
 		for block_index in range(num_blocks):
 			e = buf[block_index * keysize + x]
-			curr_b.append(chr(e))
+			curr_b.append(e)
 		b.append(curr_b)
 	return b
-
 
 def break_repeating_xor():
 
@@ -284,13 +315,15 @@ def break_repeating_xor():
 
 		list_of_normalized_edit_distances.append((keysize, normalized_edit_distance))
 
-	probable_keysize = min(list_of_normalized_edit_distances, key=lambda t: t[1])
-	list_of_normalized_edit_distances.pop()
+	# print(list_of_normalized_edit_distances)
 
-	second_prob_keysize = min(list_of_normalized_edit_distances, key=lambda t: t[1])
-	list_of_normalized_edit_distances.pop()
+	probable_keysize = min(list_of_normalized_edit_distances, key=lambda t: t[1])[0]
+	list_of_normalized_edit_distances.remove((5,1.2))
 
-	third_probable_keysize = min(list_of_normalized_edit_distances, key=lambda t: t[1])
+	second_prob_keysize = min(list_of_normalized_edit_distances, key=lambda t: t[1])[0]
+	list_of_normalized_edit_distances.remove((3,2.0))
+
+	third_probable_keysize = min(list_of_normalized_edit_distances, key=lambda t: t[1])[0]
 
 # Now that you probably know the KEYSIZE: break the ciphertext into blocks of KEYSIZE length.
 # Now transpose the blocks: make a block that is the first byte of every block, and a block that is the second byte of every block, and so on.
@@ -298,7 +331,19 @@ def break_repeating_xor():
 # For each block, the single-byte XOR key that produces the best looking histogram is the repeating-key XOR key byte for that block. Put them together and you have the key.
 
 	# tranpose blocks
-	transpose(raw_bytes)
+	t = transpose(raw_bytes,probable_keysize)
+	# print('ks1: ', probable_keysize)
+	# print('ks2: ', second_prob_keysize)
+	# print('ks3: ', third_probable_keysize)
+	# now we have lists of ints that correspond to single-char xorable solves.
+
+	# i want the keys for all of them.
+
+	# print(t)
+	key = list(map(find_single_byte_xor_key, t))
+
+	return repeating_key_xor(raw_bytes, key)
+
 
 
 # broadly, there's two steps: find the KEYSIZE, then find the .... alignment, most likely, since it's probably a repeating key.
